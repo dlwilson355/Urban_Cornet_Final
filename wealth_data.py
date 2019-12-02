@@ -5,11 +5,14 @@ The poverty data can be downloaded at: https://data.worldbank.org/indicator/SI.P
 """
 
 
+import random
+
 import pandas as pd
 import numpy as np
 
 import stats
 import plots
+import maps
 
 
 # the file path of the data to be loaded
@@ -17,7 +20,7 @@ GDP_DATA_FILE_PATH = r"gdp_data.csv"
 POVERTY_DATA_FILE_PATH = r"poverty_data.csv"
 
 
-def load_most_recent_available_data(file_path):
+def load_data(file_path):
     """Returns a dict where each key is a country and each value is the most recent measurement from the data file."""
 
     countries_to_ignore = ["World",
@@ -76,7 +79,7 @@ def load_most_recent_available_data(file_path):
         country_name = row[1]['Country Name']
         if country_name not in countries_to_ignore:
 
-            # find the most recent GDP data
+            # find the most recent measurement
             year = 2020
             value = np.NaN
             while np.isnan(value) and year > 1960:
@@ -93,9 +96,10 @@ def load_most_recent_available_data(file_path):
 if __name__ == "__main__":
 
     # load the GDP data
-    gdp_data = load_most_recent_available_data(GDP_DATA_FILE_PATH)
-    poverty_data = load_most_recent_available_data(POVERTY_DATA_FILE_PATH)
+    gdp_data = load_data(GDP_DATA_FILE_PATH)
+    poverty_data = load_data(POVERTY_DATA_FILE_PATH)
     nations_of_interest = ["United States", "Finland", "Central African Republic", "Paraguay", "Turkey"]
+    print(gdp_data)
 
     # compute the means
     print(f"Mean GDP is {stats.compute_mean(gdp_data)}.")
@@ -109,7 +113,7 @@ if __name__ == "__main__":
     print(f"Median GDP is {stats.compute_median(gdp_data)}.")
     print(f"Median poverty percentage is {stats.compute_median(poverty_data)}.")
 
-    # # compute the quantiles
+    # compute the quantiles
     # print(f"Mean GDP is {stats.compute_quantiles(gdp_data)}.")
     # print(f"Mean poverty percentage is {stats.compute_quantiles(poverty_data)}.")
 
@@ -139,7 +143,7 @@ if __name__ == "__main__":
                            "Log of National Poverty",
                            "Count",
                            "Histogram of National Poverty",
-                           False)
+                           True)
 
     # create a scatter plot
     plots.create_scatter_plot(gdp_data,
@@ -150,3 +154,14 @@ if __name__ == "__main__":
                               True,
                               True,
                               nations_of_interest)
+
+    # create maps
+    maps.create_continuous_data_map(gdp_data,
+                                    "World Map of National GDP",
+                                    "Log of National GDP",
+                                    True)
+
+    maps.create_continuous_data_map(poverty_data,
+                                    "World Map of National Poverty",
+                                    "Log of National Poverty Percentage",
+                                    True)
