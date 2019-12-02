@@ -4,6 +4,7 @@
 Created on Sun Nov 24 18:00:10 2019
 @author: noahstrac
 """
+import matplotlib.pyplot as plt
 
 #download dataset:
 #http://api.worldbank.org/v2/en/topic/4?downloadformat=csv
@@ -120,7 +121,31 @@ def load_data_education(filename, variables):
     file.close()
     return data
 
+def plotter(data):
+    counts = [0,0,0,0,0]
+    tiers = ["<75%","75%-90%","90%-95%", "95%-99%",">99%"]  
+    count = 0
+    for variable in variables:
+        for country in data:
+            if data[country][count + 2] != "No Data":
+                if float(data[country][count + 2]) > 99:
+                    counts[4] += 1
+                elif float(data[country][count + 2]) > 95:
+                    counts[3] += 1
+                elif float(data[country][count + 2]) > 90:
+                    counts[2] += 1
+                elif float(data[country][count + 2]) > 75:
+                    counts[1] += 1
+                else:
+                    counts[0] += 1
+        title = data[country][count] + " Counts based on percentiles"
+        plt.bar(tiers,counts)
+        plt.ylabel("Number of Countries in the Tier")
+        plt.xlabel("Tiers")
+        plt.title(title)
+        plt.show()
+        count += 3
+        counts = [0,0,0,0,0]
+
 variables = ["Primary completion rate, total (% of relevant age group)","Literacy rate, adult total (% of people ages 15 and above)"]
-print(load_data_education("education.csv",variables))
-                
-                
+plotter(load_data_education("education.csv",variables))
