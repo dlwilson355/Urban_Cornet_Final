@@ -6,8 +6,8 @@ Created on Tue Dec  3 13:10:49 2019
 @author: sarafergus
 """
 #going to have to change this
-from WHR_EDA import get_var
-from WHR_EDA import info_dict
+from happiness_relationships import get_var
+from happiness_relationships import info_dict
 import matplotlib.pyplot as plt
 import statistics
     
