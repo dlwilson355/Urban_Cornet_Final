@@ -5,6 +5,7 @@ Created on Sun Nov 24 18:00:10 2019
 @author: noahstrac
 """
 import matplotlib.pyplot as plt
+from country_name_info import COUNTRIES_TO_IGNORE
 
 #download dataset:
 #http://api.worldbank.org/v2/en/topic/4?downloadformat=csv
@@ -23,51 +24,7 @@ year accordingly. Nearly every variable in the dataset has exactly 1 comma.
 def load_data_education(filename, variables):
     #initialize data dictionary
     data = dict()
-    #initialize countries to ignore
-    countries_to_ignore = ["World",
-                           "Upper middle income",
-                           "Sub-Saharan Africa (IDA & IBRD countries)",
-                           "Middle East & North Africa (IDA & IBRD countries)",
-                           "Latin America & the Caribbean (IDA & IBRD countries)",
-                           "Europe & Central Asia (IDA & IBRD countries)",
-                           "East Asia & Pacific (IDA & IBRD countries)",
-                           "Small states",
-                           "Sub-Saharan Africa (excluding high income)",
-                           "South Asia",
-                           "Post-demographic dividend",
-                           "Pacific island small states",
-                           "Pre-demographic dividend",
-                           "Other small states",
-                           "OECD members",
-                           "North America",
-                           "Middle income",
-                           "Middle East & North Africa (excluding high income)",
-                           "Middle East & North Africa",
-                           "Late-demographic dividend",
-                           "Low & middle income",
-                           "Lower middle income",
-                           "Low income",
-                           "Least developed countries: UN classification",
-                           "Latin America & Caribbean",
-                           "Latin America & Caribbean (excluding high income)",
-                           "IDA only",
-                           "IDA blend",
-                           "IDA total",
-                           "IDA & IBRD total",
-                           "IBRD only",
-                           "Heavily indebted poor countries (HIPC)",
-                           "High income",
-                           "Fragile and conflict affected situations",
-                           "European Union",
-                           "Euro area",
-                           "Europe & Central Asia",
-                           "Europe & Central Asia (excluding high income)",
-                           "East Asia & Pacific",
-                           "Early-demographic dividend",
-                           "East Asia & Pacific (excluding high income)",
-                           "Caribbean small states",
-                           "Central Europe and the Baltics",
-                           "Arab World"]
+
     #open file
     file = open(filename, 'r')
     #get data
@@ -116,7 +73,7 @@ def load_data_education(filename, variables):
                         stat = "No Data"
                         year = "No Data"
                     #initialize country's first variable and data associated
-                    if country not in countries_to_ignore:
+                    if country not in COUNTRIES_TO_IGNORE:
                         data[country] = [variable, str(year), stat]
     file.close()
     return data
@@ -139,7 +96,7 @@ def plotter(data):
                 else:
                     counts[0] += 1
         title = data[country][count] + " Counts based on percentiles"
-        plt.bar(tiers,counts)
+        plt.bar(tiers, counts)
         plt.ylabel("Number of Countries in the Tier")
         plt.xlabel("Tiers")
         plt.title(title)
@@ -147,5 +104,7 @@ def plotter(data):
         count += 3
         counts = [0,0,0,0,0]
 
-variables = ["Primary completion rate, total (% of relevant age group)","Literacy rate, adult total (% of people ages 15 and above)"]
-plotter(load_data_education("education.csv",variables))
+
+if __name__ == "__main__":
+    variables = ["Primary completion rate, total (% of relevant age group)","Literacy rate, adult total (% of people ages 15 and above)"]
+    plotter(load_data_education(r"data/education.csv", variables))

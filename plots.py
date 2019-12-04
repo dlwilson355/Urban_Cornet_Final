@@ -2,8 +2,6 @@
 This file contains reusable functions for making plots of data.
 The functions assume the data is passed as a dictionary where the keys are strings specifying the countries and the
 values are the variable of interest for the corresponding nation.
-
-TODO: Use walrus operator ;).
 """
 
 import copy
@@ -174,33 +172,3 @@ if __name__ == "__main__":
 
     # create a scatter plot
     create_scatter_plot(sample_data_dict_1, sample_data_dict_2, marks=sample_marks_1)
-
-
-"""
- # fit the classifier
-        self.classifier.fit(x_train, y_train)
-        print(f"Got a mean cross validation accuracy of {self.classifier.best_score_:.4f}.")
-        print(f"The parameters that worked best were {self.classifier.best_params_}.")
-
-        # test the brain
-        FIG_SAVE_PATH = "confusion_matrix.png"
-        y_pred = self.classifier.predict(x_test)
-        print("Here is a classification report on the testing data...")
-        print(classification_report(y_test, y_pred))
-        cm = confusion_matrix(y_test, y_pred)
-        print("Here is the confusion matrix of the testing data.")
-        print(cm)
-
-        # save a confusion matrix
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        cm_ax = ax.matshow(np.log(cm + .01))  # we add .01 to avoid dividing by 0 error
-        ax.set_xticklabels([""] + list(self.classifier.classes_))
-        ax.set_yticklabels([""] + list(self.classifier.classes_))
-        fig.colorbar(cm_ax)
-        plt.title("Confusion Matrix")
-        plt.xlabel("Predicted Label")
-        plt.ylabel("True Label")
-        fig.savefig(FIG_SAVE_PATH)
-        print(f"Saved confusion matrix to '{FIG_SAVE_PATH}'.")
-"""

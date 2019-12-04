@@ -13,60 +13,16 @@ import numpy as np
 import stats
 import plots
 import maps
+from country_name_info import COUNTRIES_TO_IGNORE
 
 
 # the file path of the data to be loaded
-GDP_DATA_FILE_PATH = r"gdp_data.csv"
-POVERTY_DATA_FILE_PATH = r"poverty_data.csv"
+GDP_DATA_FILE_PATH = r"data/gdp_data.csv"
+POVERTY_DATA_FILE_PATH = r"data/poverty_data.csv"
 
 
-def load_data(file_path):
+def load_wealth_data(file_path):
     """Returns a dict where each key is a country and each value is the most recent measurement from the data file."""
-
-    countries_to_ignore = ["World",
-                           "Upper middle income",
-                           "Sub-Saharan Africa (IDA & IBRD countries)",
-                           "Middle East & North Africa (IDA & IBRD countries)",
-                           "Latin America & the Caribbean (IDA & IBRD countries)",
-                           "Europe & Central Asia (IDA & IBRD countries)",
-                           "East Asia & Pacific (IDA & IBRD countries)",
-                           "Small states",
-                           "Sub-Saharan Africa (excluding high income)",
-                           "South Asia",
-                           "Post-demographic dividend",
-                           "Pacific island small states",
-                           "Pre-demographic dividend",
-                           "Other small states",
-                           "OECD members",
-                           "North America",
-                           "Middle income",
-                           "Middle East & North Africa (excluding high income)",
-                           "Middle East & North Africa",
-                           "Late-demographic dividend",
-                           "Low & middle income",
-                           "Lower middle income",
-                           "Low income",
-                           "Least developed countries: UN classification",
-                           "Latin America & Caribbean",
-                           "Latin America & Caribbean (excluding high income)",
-                           "IDA only",
-                           "IDA blend",
-                           "IDA total",
-                           "IDA & IBRD total",
-                           "IBRD only",
-                           "Heavily indebted poor countries (HIPC)",
-                           "High income",
-                           "Fragile and conflict affected situations",
-                           "European Union",
-                           "Euro area",
-                           "Europe & Central Asia",
-                           "Europe & Central Asia (excluding high income)",
-                           "East Asia & Pacific",
-                           "Early-demographic dividend",
-                           "East Asia & Pacific (excluding high income)",
-                           "Caribbean small states",
-                           "Central Europe and the Baltics",
-                           "Arab World"]
 
     # load the data set and initialize an empty dict
     df = pd.read_csv(file_path)
@@ -77,7 +33,7 @@ def load_data(file_path):
 
         # find the country's name
         country_name = row[1]['Country Name']
-        if country_name not in countries_to_ignore:
+        if country_name not in COUNTRIES_TO_IGNORE:
 
             # find the most recent measurement
             year = 2020
@@ -96,8 +52,8 @@ def load_data(file_path):
 if __name__ == "__main__":
 
     # load the GDP data
-    gdp_data = load_data(GDP_DATA_FILE_PATH)
-    poverty_data = load_data(POVERTY_DATA_FILE_PATH)
+    gdp_data = load_wealth_data(GDP_DATA_FILE_PATH)
+    poverty_data = load_wealth_data(POVERTY_DATA_FILE_PATH)
     nations_of_interest = ["United States", "Finland", "Central African Republic", "Paraguay", "Turkey"]
     print(gdp_data)
 

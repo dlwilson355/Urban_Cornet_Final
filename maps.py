@@ -3,12 +3,15 @@ This file contains reusable functions for making maps of data.
 The functions assume the data is passed as a dictionary where the keys are strings specifying the countries and the
 values are the variable of interest for the corresponding nation.
 
+Cartopy can be installed with "conda install -c conda-forge cartopy".
+
 TODO: How to handle cases where strings are different.
 """
 
 
 import copy
 import random
+import string
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
@@ -17,6 +20,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.cm import get_cmap
 import numpy as np
+
+from country_name_info import MANUAL_MATCHES
 
 
 def create_discrete_data_map(data_dict, title="World Map", order="auto"):
@@ -92,6 +97,18 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
     reader = shpreader.Reader(shape_file_name)
     countries = reader.records()
 
+    def get_0_to_1(value):
+        """
+        Returns a number 0 to 1 representing where the value lies relative to the rest of the plotted values.
+        Used for determining what value to pass to the color map.
+        """
+
+        largest_value = max(data.values()) - min(data.values())
+        this_value = value - min(data.values())
+        zero_to_one = this_value / largest_value
+
+        return zero_to_one
+
     # color the countries by value
     print("\n\nAttempting to match strings in data dictionary with strings from map data...")
     color_map = get_cmap("viridis", 1e3)
@@ -100,7 +117,7 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
         if match:
             ax.add_geometries(country.geometry,
                               ccrs.PlateCarree(),
-                              facecolor=color_map(data[match] / max(data.values())),
+                              facecolor=color_map(get_0_to_1(data[match])),
                               edgecolor="#000000")
         else:
             ax.add_geometries(country.geometry,
@@ -109,7 +126,7 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
                               edgecolor="#000000")
 
     # add a colorbar
-    cax = fig.add_axes([0.15, 0.17, 0.02, 0.5])
+    cax = fig.add_axes([0.17, 0.20, 0.02, 0.5])
     color_bar = mpl.colorbar.ColorbarBase(ax=cax, cmap=color_map, boundaries=sorted(data.values()))
     color_bar.set_label(color_bar_label)
 
@@ -120,17 +137,32 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
     plt.show()
 
 
-def get_matching_key(string, dict):
+def get_matching_key(match_string, dict):
     """Returns a key whose string closely matches the passed string.  If no matches are found, False is returned."""
 
-    string1 = string.lower()
+    string1 = match_string.lower().translate(str.maketrans('', '', string.punctuation))
     for key in dict.keys():
-        string2 = key.lower()
-        if string1 in string2 or string2 in string1:
-            print(f"Matched '{key}' with '{string}'.")
+        string2 = key.lower().translate(str.maketrans('', '', string.punctuation))
+        words_1 = string1.split()
+        words_2 = string2.split()
+
+        # if the two strings are similar match them
+        if all(word in words_1 for word in words_2) or all(word in words_2 for word in words_1):
+            print(f"Matched '{key}' with '{match_string}'.")
             return key
 
-    print(f"No match found for {string}.")
+        # otherwise check for a manual match
+        for matching_string in MANUAL_MATCHES:
+            match = True
+            for word in words_1 + words_2:
+                if word not in matching_string.lower():
+                    match = False
+            if match:
+                print(f"Matched '{key}' with '{match_string}'.")
+                return key
+
+    # otherwise no match is found
+    print(f"No match found for {match_string}.")
 
     return False
 
