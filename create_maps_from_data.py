@@ -1,5 +1,6 @@
 """This file contains code for generating maps of the individual data sets."""
 
+
 from wealth_data import load_wealth_data, GDP_DATA_FILE_PATH, POVERTY_DATA_FILE_PATH
 from WHR_EDA import read_happiness, read_military, TRANSLATE_DICT
 from load_education import load_data_education

@@ -4,14 +4,11 @@ The functions assume the data is passed as a dictionary where the keys are strin
 values are the variable of interest for the corresponding nation.
 
 Cartopy can be installed with "conda install -c conda-forge cartopy".
-
-TODO: How to handle cases where strings are different.
 """
 
 
 import copy
 import random
-import string
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
@@ -21,7 +18,7 @@ import matplotlib.patches as mpatches
 from matplotlib.cm import get_cmap
 import numpy as np
 
-from country_name_info import MANUAL_MATCHES
+from country_name_matching import get_matching_key
 
 
 def create_discrete_data_map(data_dict, title="World Map", order="auto"):
@@ -51,7 +48,7 @@ def create_discrete_data_map(data_dict, title="World Map", order="auto"):
     color_map = get_cmap("viridis", len(values))
     colors = [color_map(i / (len(values)-1)) for i in range(len(values))]
     for country in countries:
-        match = get_matching_key(country.attributes["NAME_EN"], data)
+        match = get_matching_key(country.attributes["NAME_EN"], data, silent=False)
         if match:
             ax.add_geometries(country.geometry,
                               ccrs.PlateCarree(),
@@ -113,7 +110,7 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
     print("\n\nAttempting to match strings in data dictionary with strings from map data...")
     color_map = get_cmap("viridis", 1e3)
     for country in countries:
-        match = get_matching_key(country.attributes["NAME_EN"], data)
+        match = get_matching_key(country.attributes["NAME_EN"], data, silent=True)
         if match:
             ax.add_geometries(country.geometry,
                               ccrs.PlateCarree(),
@@ -135,36 +132,6 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
 
     # display the plot
     plt.show()
-
-
-def get_matching_key(match_string, dict):
-    """Returns a key whose string closely matches the passed string.  If no matches are found, False is returned."""
-
-    string1 = match_string.lower().translate(str.maketrans('', '', string.punctuation))
-    for key in dict.keys():
-        string2 = key.lower().translate(str.maketrans('', '', string.punctuation))
-        words_1 = string1.split()
-        words_2 = string2.split()
-
-        # if the two strings are similar match them
-        if all(word in words_1 for word in words_2) or all(word in words_2 for word in words_1):
-            print(f"Matched '{key}' with '{match_string}'.")
-            return key
-
-        # otherwise check for a manual match
-        for matching_string in MANUAL_MATCHES:
-            match = True
-            for word in words_1 + words_2:
-                if word not in matching_string.lower():
-                    match = False
-            if match:
-                print(f"Matched '{key}' with '{match_string}'.")
-                return key
-
-    # otherwise no match is found
-    print(f"No match found for {match_string}.")
-
-    return False
 
 
 def generate_discrete_sample_data(num_values=20):

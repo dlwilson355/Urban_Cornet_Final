@@ -10,7 +10,7 @@ import scipy.stats
 import numpy as np
 import statistics
 
-from country_name_info import TRANSLATE_DICT
+from country_name_matching import TRANSLATE_DICT
 
 def get_var(info_dict, key, marks):
   temp = []

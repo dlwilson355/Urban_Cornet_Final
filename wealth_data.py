@@ -13,7 +13,7 @@ import numpy as np
 import stats
 import plots
 import maps
-from country_name_info import COUNTRIES_TO_IGNORE
+from country_name_matching import COUNTRIES_TO_IGNORE
 
 
 # the file path of the data to be loaded

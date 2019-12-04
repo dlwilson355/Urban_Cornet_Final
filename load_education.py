@@ -5,7 +5,7 @@ Created on Sun Nov 24 18:00:10 2019
 @author: noahstrac
 """
 import matplotlib.pyplot as plt
-from country_name_info import COUNTRIES_TO_IGNORE
+from country_name_matching import COUNTRIES_TO_IGNORE
 
 #download dataset:
 #http://api.worldbank.org/v2/en/topic/4?downloadformat=csv
