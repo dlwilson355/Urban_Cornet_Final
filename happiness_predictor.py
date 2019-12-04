@@ -98,21 +98,21 @@ def load_all_data():
     return all_data_dict
 
 
-def get_train_test_split(data_dict, affect="Positive", testing_proportion=0.25):
+def get_train_test_split(data_dict, affect="Positive", num_splits=5):
     """
     Takes a data_dict, which type of Y data is desired, and a testing proportion as input.
     Returns numpy arrays of X and Y data along with a "lookup list" indicated which values correspond to which nations.
     """
 
     # determine how many training and testing data point to make
-    num_testing = int(testing_proportion * len(data_dict))
+    num_testing = int(1/num_splits * len(data_dict))
     num_training = len(data_dict) - num_testing
 
     # randomly order the countries
     countries = list(data_dict.keys())
     random.shuffle(countries)
 
-    # create the training and testing data
+    # create the training and testing data splits
     X_train, X_test, Y_train, Y_test, countries_train, countries_test = [], [], [], [], [], []
     for country in countries:
 
@@ -134,6 +134,60 @@ def get_train_test_split(data_dict, affect="Positive", testing_proportion=0.25):
             countries_test.append(country)
 
     return np.array(X_train), np.array(X_test), np.array(Y_train), np.array(Y_test), countries_train, countries_test
+
+
+def get_train_test_splits(data_dict, affect="Positive", num_splits=10):
+    """Returns a list of splits used for training and testing."""
+
+    country_splits = split_countries(data_dict, num_splits)
+    X_train_splits, X_test_splits, Y_train_splits, Y_test_splits = [], [], [], []
+
+    for testing_countries in country_splits:
+
+        X_train, X_test, Y_train, Y_test = [], [], [], []
+
+        for country in data_dict.keys():
+
+            # find the x and y data for the country
+            x = data_dict[country][2:]
+            if affect == "Positive":
+                y = data_dict[country][0]
+            else:
+                y = data_dict[country][1]
+
+            # append to the training or testing data
+            if country in testing_countries:
+                X_test.append(x)
+                Y_test.append(y)
+            else:
+                X_train.append(x)
+                Y_train.append(y)
+
+        # add the splits
+        X_train_splits.append(X_train)
+        X_test_splits.append(X_test)
+        Y_train_splits.append(Y_train)
+        Y_test_splits.append(Y_test)
+
+    return X_train_splits, X_test_splits, Y_train_splits, Y_test_splits, country_splits
+
+
+def split_countries(data_dict, num_splits=10):
+    """
+    This function randomly splits the countries to specify which ones should serve as predictions for each iteration.
+    """
+
+    # randomly split the countries
+    countries = list(data_dict.keys())
+    random.shuffle(countries)
+    country_splits = [[] for _ in range(num_splits)]
+    while len(countries) > 0:
+        for split in country_splits:
+            if len(countries) > 0:
+                split.append(countries[-1])
+                countries = countries[:-1]
+
+    return country_splits
 
 
 def get_SGD_grid_search_model():
@@ -178,7 +232,7 @@ def train_and_map():
         # load all the data and split for training and testing
         data_dict = load_all_data()
         X_train, X_test, Y_train, Y_test, countries_train, countries_test = \
-            get_train_test_split(data_dict, affect=affect, testing_proportion=0.5)
+            get_train_test_split(data_dict, affect=affect, num_splits=2)
 
         # fit the model and make predictions
         model = get_SGD_model()
@@ -200,5 +254,48 @@ def train_and_map():
                                    False)
 
 
+def train_and_map_2():
+    """
+    This function trains a model to predict both positive and negative affect.
+    It makes a map of the predicted vs actual affects.
+    """
+
+    affects_to_predict = ["Positive", "Negative"]
+
+    for affect in affects_to_predict:
+
+        # store the test data values and test prediction results from each set of testing data
+        all_predictions = {}
+        all_actual = {}
+
+        # load all the data and split for training and testing
+        data_dict = load_all_data()
+        X_train_splits, X_test_splits, Y_train_splits, Y_test_splits, C_splits = \
+            get_train_test_splits(data_dict, affect=affect, num_splits=10)
+
+        for X_train, X_test, Y_train, Y_test, C_split in \
+            zip(X_train_splits, X_test_splits, Y_train_splits, Y_test_splits, C_splits):
+
+            # fit the model and make predictions
+            model = get_SGD_model()
+            model.fit(X_train, Y_train)
+            Y_pred = model.predict(X_test)
+
+            # add this set of predictions to the master dictionary
+            all_predictions = dict(all_predictions, **{country: prediction for country, prediction in zip(C_split, Y_pred)})
+            all_actual = dict(all_actual, **{country: actual for country, actual in zip(C_split, Y_test)})
+
+        create_continuous_data_map(all_predictions,
+                                   f"World Map of Predicted {affect} Affect",
+                                   f"Predicted {affect} Affect",
+                                   False)
+
+        create_continuous_data_map(all_actual,
+                                   f"World Map of Actual {affect} Affect",
+                                   f"Actual {affect} Affect",
+                                   False)
+
+
 if __name__ == "__main__":
-    train_and_map()
+    # train_and_map()
+    train_and_map_2()
