@@ -5,6 +5,7 @@ Created on Sun Nov 24 18:00:10 2019
 @author: noahstrac
 """
 import matplotlib.pyplot as plt
+plt.style.use('Solarize_Light2')
 from country_name_matching import COUNTRIES_TO_IGNORE
 
 #download dataset:
@@ -95,11 +96,12 @@ def plotter(data):
                     counts[1] += 1
                 else:
                     counts[0] += 1
-        title = data[country][count] + " Counts based on percentiles"
+        title = data[country][count] + "\n Counts based on percentiles"
         plt.bar(tiers, counts)
         plt.ylabel("Number of Countries in the Tier")
         plt.xlabel("Tiers")
         plt.title(title)
+        plt.savefig("./graph" + str(count), bbox_inches='tight')
         plt.show()
         count += 3
         counts = [0,0,0,0,0]
