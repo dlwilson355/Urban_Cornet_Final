@@ -8,13 +8,13 @@ Created on Thu Nov 21 20:25:27 2019
 '''imports '''
 import matplotlib.pyplot as plt
 import scipy.stats
-import numpy as np
 import statistics
 from wealth_data import load_wealth_data
 from load_education import load_data_education
-from country_name_matching import TRANSLATE_DICT
 import seaborn as sn
 import pandas as pd
+from country_name_matching import TRANSLATE_DICT
+
 ##############################################################################
 '''functions'''
 ##############################################################################
@@ -27,11 +27,12 @@ keys = [
     'Percent Military(of Gov)', 'Poverty'
 ]
 ranks = [
-        'Pos Affect', 'Neg Affect', 'Ladder', 'Social Support', 'Freedom',
-        'Corruption', 'Generosity', 'GDP', 'Life Exp'
-    ]
+    'Pos Affect', 'Neg Affect', 'Ladder', 'Social Support', 'Freedom',
+    'Corruption', 'Generosity', 'GDP', 'Life Exp'
+]
 
-#TODO: combine these functions
+
+# TODO: combine these functions
 def read_happiness(keys):
     '''read in happiness dataset. Return Dictionary of tidy data'''
     i = 0
@@ -54,28 +55,27 @@ def read_happiness(keys):
                     'Life Exp': int(line[10])
                 }
             except:
-                #no data. Make zero. Do not include in statistics and charts (piecewise)
+                # no data. Make zero. Do not include in statistics and charts (piecewise)
                 for i in range(len(line)):
                     if len(line[i]) < 1:
-                        line[i] = np.NAN
-                line = [line[0]] + [int(x) if not np.isnan(float(x)) else np.NAN for x in line[1:]]
+                        line[i] = 0
                 info_dict[line[0]] = {
-                    'Ladder': line[1],
-                    'Pos Affect': line[3],
-                    'Neg Affect': line[4],
-                    'Social Support': line[5],
-                    'Freedom': line[6],
-                    'Corruption': line[7],
-                    'Generosity': line[8],
-                    'GDP': line[9],
-                    'Life Exp': line[10]
+                    'Ladder': int(line[1]),
+                    'Pos Affect': int(line[3]),
+                    'Neg Affect': int(line[4]),
+                    'Social Support': int(line[5]),
+                    'Freedom': int(line[6]),
+                    'Corruption': int(line[7]),
+                    'Generosity': int(line[8]),
+                    'GDP': int(line[9]),
+                    'Life Exp': int(line[10])
                 }
     info_dict = reconcile(info_dict, keys)
     return info_dict
 
 
 def read_education(trans, info, keys):
-    '''read in education dataset, using given data dictionary. Return 
+    '''read in education dataset, using given data dictionary. Return
     dictionary of tidy data'''
     variables = [
         "Primary completion rate, total (% of relevant age group)",
@@ -116,23 +116,23 @@ def read_data(key, filename, trans, info, keys):
 
 
 def read_military(filename, info_dict, translate, percent_of, keys):
-    '''read in military dataset, using given dictionary. Return dictionary of 
+    '''read in military dataset, using given dictionary. Return dictionary of
     tidy data'''
     f = open(filename)
     for line in f:
-        #no longer a country or heading line
+        # no longer a country or heading line
         if 'xxx' in line or '%' not in line:
             continue
         line = line.strip()
         line = line.split(',')
 
-        #missing data
+        # missing data
         if '. .' in line[-1]:
             line[-1] = '0'
         country = line[0].strip('"')
         percent = float(line[-1].strip('%'))
 
-        #need translation dictionary
+        # need translation dictionary
         if country in list(translate.keys()):
             country = translate[country]
 
@@ -151,7 +151,7 @@ def reconcile(info_dict, keys):
     for item in info_dict.keys():
         for jtem in keys:
             if jtem not in info_dict[item].keys():
-                info_dict[item][jtem] = np.NAN
+                info_dict[item][jtem] = 0
     return info_dict
 
 
@@ -175,7 +175,7 @@ def pairwise_delete(x, y):
     x_copy = x[:]
     y_copy = y[:]
     for i in range(len(x)):
-        if np.isnan(x[i]) or np.isnan(y[i]):
+        if x[i] == 0 or y[i] == 0:
             x_copy.remove(x[i])
             y_copy.remove(y[i])
     return x_copy, y_copy
@@ -183,7 +183,7 @@ def pairwise_delete(x, y):
 
 def plot_relationships(info_dict, x_key, y_key, ranks):
     '''Plot scatterplot between two variables. Pairwise delete missing data.
-    Plot linear regression line. Adjust axes for ranked data. 
+    Plot linear regression line. Adjust axes for ranked data.
     Mark countries of interest (determined through EDA)'''
     marks = [
         'United States', 'Finland', 'Central African Republic', 'Paraguay',
@@ -192,19 +192,19 @@ def plot_relationships(info_dict, x_key, y_key, ranks):
     x, mark_x = get_var(info_dict, x_key, marks)
     y, mark_y = get_var(info_dict, y_key, marks)
     x, y = pairwise_delete(x, y)
-    
-    #linear regression
+
+    # linear regression
     m, b, r, p, sd = scipy.stats.linregress(x, y)
     line = [m * x1 + b for x1 in x]
     fig, ax = plt.subplots()
-    if bool(x_key not in ranks or x_key == 'Corruption') ^ bool(y_key not in ranks or y_key =='Corruption'):
-        textstr = 'r-value: ' + str(round(-1*r, 4)) + '\n p-value: ' + str(
+    if bool(x_key not in ranks or x_key == 'Corruption') ^ bool(y_key not in ranks or y_key == 'Corruption'):
+        textstr = 'r-value: ' + str(round(-1 * r, 4)) + '\n p-value: ' + str(
             round(p, 4))
     else:
         textstr = 'r-value: ' + str(round(r, 4)) + '\n p-value: ' + str(
-            round(p, 4))     
+            round(p, 4))
     props = dict(boxstyle='round', facecolor='white', alpha=1)
-    switches = ['Percent Military(of Gov)', 'Corruption','Percent Military(of GDP)',
+    switches = ['Percent Military(of Gov)', 'Corruption', 'Percent Military(of GDP)',
                 'Poverty']
     if x_key in switches:
         ax.text(
@@ -214,7 +214,7 @@ def plot_relationships(info_dict, x_key, y_key, ranks):
             transform=ax.transAxes,
             fontsize=14,
             verticalalignment='top',
-            bbox=props) 
+            bbox=props)
     else:
         ax.text(
             0.05,
@@ -225,7 +225,7 @@ def plot_relationships(info_dict, x_key, y_key, ranks):
             verticalalignment='top',
             bbox=props)
 
-    #adjust axes
+    # adjust axes
     if x_key in ranks and x_key != 'Corruption':
         ax.set_xlim(max(x) + 10, min(x) - 10)
         plt.xlabel(x_key + ' Ranking')
@@ -238,22 +238,22 @@ def plot_relationships(info_dict, x_key, y_key, ranks):
         plt.ylabel(y_key)
     plt.scatter(x, y)
 
-    #mark countries
+    # mark countries
     plt.scatter(list(mark_x.values()), list(mark_y.values()))
     for value in mark_x.keys():
-        if not np.isnan(mark_x[value]) and not np.isnan(mark_y[value]):
+        if mark_x[value] != 0 and mark_y[value] != 0:
             props = dict(boxstyle='round', facecolor='white', alpha=0.50)
             ax.annotate(
                 value, (mark_x[value], mark_y[value]), bbox=props)
 
-    #plot
+    # plot
     plt.title(x_key + ' versus ' + y_key)
     plt.plot(x, line, 'r')
-#    plt.show()
-    plt.savefig('data/relationship_' + x_key + y_key,  bbox_inches='tight')
+    #    plt.show()
+    plt.savefig('./relationship_' + x_key + y_key, bbox_inches='tight')
 
 
-#TODO: add ranks to reference info
+# TODO: add ranks to reference info
 def find_trends(info_dict, keys, ranks):
     '''break into categories (extremely low, low, below average, above average, high, extremely high)
     and return dictionary of each country with its categorized variables'''
@@ -286,7 +286,7 @@ def find_trends(info_dict, keys, ranks):
                 average + 2 * sd
             ]
 
-    #create meta- dictionary of categories
+    # create meta- dictionary of categories
     variable2category = {}
     for thing in info_dict.keys():
         variable2category[thing] = {}
@@ -301,11 +301,11 @@ def find_trends(info_dict, keys, ranks):
 
 
 def determine_category(categories, variable, value, ranks):
-    '''Determine category of data (extremely low, low, below average, above 
+    '''Determine category of data (extremely low, low, below average, above
     average, high, extremely high'''
     if variable in ranks:
         compare = categories[variable]
-        if np.isnan(value):
+        if value == 0:
             return 'no data'
         if value < compare[0]:
             return 'extremely high'
@@ -321,7 +321,7 @@ def determine_category(categories, variable, value, ranks):
             return 'extremely low'
     else:
         compare = categories[variable]
-        if np.isnan(value):
+        if value == 0:
             return 'no data'
         if value < compare[0]:
             return 'extremely low'
@@ -376,19 +376,19 @@ def predict_happiness(happiness_level, keys, trends):
     return predict
 
 
-#TODO: change to include all variables
+# TODO: change to include all variables
 def happy_probabilities(key, predict, title, ranks):
     '''Plot trends of countries with particular levels of happiness'''
-#    if 'Military' not in key:
-#        #TODO: this makes corruption look like it is going the wrong way. Reverse it with military
-#        plt.bar(
-#            list(range(len(list(predict[key].values())))[1:]),
-#            list(predict[key].values())[1:])
-#    else:
-        #TODO: this is not correct   
-    values = [predict[key]['extremely low'],predict[key]['low'],
-              predict[key]['below average'],predict[key]['above average'],
-              predict[key]['high'],predict[key]['extremely high']]
+    #    if 'Military' not in key:
+    #        #TODO: this makes corruption look like it is going the wrong way. Reverse it with military
+    #        plt.bar(
+    #            list(range(len(list(predict[key].values())))[1:]),
+    #            list(predict[key].values())[1:])
+    #    else:
+    # TODO: this is not correct
+    values = [predict[key]['extremely low'], predict[key]['low'],
+              predict[key]['below average'], predict[key]['above average'],
+              predict[key]['high'], predict[key]['extremely high']]
     plt.bar(
         list(range(len(values))),
         (values))
@@ -398,12 +398,12 @@ def happy_probabilities(key, predict, title, ranks):
          'high', 'extremely \nhigh'))
     plt.title(title)
     plt.ylabel('Percent')
-    plt.savefig('data/' + title ,  bbox_inches='tight')
+    plt.savefig('./' + title, bbox_inches='tight')
     plt.show()
 
 
 def remove_outliers(outliers, info):
-    '''return copy of info_dict without particular entries in order to plot without 
+    '''return copy of info_dict without particular entries in order to plot without
     outliers'''
     info_copy = info.copy()
     for item in outliers:
@@ -429,7 +429,7 @@ def plot_2var(info_dict, keys, happiness):
                 plot_relationships(info_dict, item, jtem, ranks)
 
 
-#TODO: make this not hard coded...
+# TODO: make this not hard coded...
 def confusion_matrix():
     '''Create Confusion Matrix of correlation coefficients for all variables.
     If the p-value is below 0.05, mark correlation coefficient as 0.'''
@@ -460,12 +460,11 @@ def confusion_matrix():
     plt.figure(figsize=(10, 7))
     plt.title('Correlation Coefficients')
     sn.heatmap(data=df_cm, annot=annotate, cmap='PuBu', cbar=True, fmt='')
-    plt.savefig('data/confusion', bbox_inches='tight')
+    plt.savefig('./confusion', bbox_inches='tight')
 
 
 def get_info_dict():
-    '''reads in the data and returns an info dict'''
-    # read in data
+    '''Returns an info dict with all the data.'''
     info_dict = read_happiness(keys + happiness)
     info_dict = read_military('data/milt_per_gov.csv', info_dict, TRANSLATE_DICT,
                               '(of Gov)', keys + happiness)
@@ -487,11 +486,11 @@ if __name__ == "__main__":
 
     info_dict = get_info_dict()
 
-    #plot 2- Variable Scatterplots
-    #plot_2var(info_dict, keys, happiness)
+    # plot 2- Variable Scatterplots
+    # plot_2var(info_dict, keys, happiness)
 
-    #find trends
-    #TODO: adjust for new data
+    # find trends
+    # TODO: adjust for new data
     trends = find_trends(info_dict, keys, ranks)
 
     #
@@ -506,8 +505,8 @@ if __name__ == "__main__":
     print(trends['Finland'])
     print(info_dict['Finland'])
     print(predict)
-    #plot confusion matrix
-    #confusion_matrix()
+    # plot confusion matrix
+    # confusion_matrix()
 
 
 ##############################################################################
