@@ -68,7 +68,7 @@ def create_discrete_data_map(data_dict, title="World Map", order="auto"):
     plt.show()
 
 
-def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Values", log_x=False):
+def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Values", log_x=False, reverse_cmap=False):
     """This function creates a world map with countries drawn on it."""
 
     # copy the dict so we don't change it
@@ -103,6 +103,8 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
         largest_value = max(data.values()) - min(data.values())
         this_value = value - min(data.values())
         zero_to_one = this_value / largest_value
+        if reverse_cmap:
+            zero_to_one = 1 - zero_to_one
 
         return zero_to_one
 
@@ -122,7 +124,7 @@ def create_continuous_data_map(data_dict, title="World Map", color_bar_label="Va
                               facecolor="#999999",
                               edgecolor="#000000")
 
-    # add a colorbar
+    # add a color bar
     cax = fig.add_axes([0.17, 0.20, 0.02, 0.5])
     color_bar = mpl.colorbar.ColorbarBase(ax=cax, cmap=color_map, boundaries=sorted(data.values()))
     color_bar.set_label(color_bar_label)
