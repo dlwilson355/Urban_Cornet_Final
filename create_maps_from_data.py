@@ -23,15 +23,16 @@ def create_maps():
     poverty_data = load_wealth_data(POVERTY_DATA_FILE_PATH)
     maps.create_continuous_data_map(poverty_data,
                                     "World Map of National Poverty",
-                                    "Log of National Poverty Percentage",
-                                    log_x=True,
+                                    "National Poverty Percentage",
+                                    log_x=False,
                                     reverse_cmap=False)
 
     # create a maps of emotional affects, freedoms, life expectancy, ect
     variables_to_map = ["Ladder", "Pos Affect", "Neg Affect", "Social Support",
-                        "Freedom", "Corruption", "Generosity", "Life Exp"]
+                        "Freedom", "Corruption", "Generosity", "Life Exp", "GDP"]
     map_names = ["Ladder Rating", "Positive Affect Rating", "Negative Affect Rating", "Social Support Rating",
-                 "Freedom Rating", "Corruption Rating", "Generosity Rating", "Life Expectancy Rating"]
+                 "Freedom Rating", "Corruption Rating", "Generosity Rating", "Life Expectancy Rating",
+                 "Gross Domestic Product Per Capita Ranking"]
     happiness_data = read_happiness(keys + happiness)
     for variable, map_name in zip(variables_to_map, map_names):
         maps.create_continuous_data_map({key: value[variable] for (key, value) in happiness_data.items()},
