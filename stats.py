@@ -2,8 +2,6 @@
 This file contains reusable functions for analyzing statistics of data.
 The functions assume the data is passed as a dictionary where the keys are strings specifying the countries and the
 values are the variable of interest for the corresponding nation.
-
-TODO: Upgrade to python 3.8 and test quantiles function.
 """
 
 
