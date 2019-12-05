@@ -79,12 +79,16 @@ def load_data_education(filename, variables):
     file.close()
     return data
 
+""" This fuction plots a bar chart which uses the data given and creates a
+visual of the number of counts (countries) in each of the tiers.
+"""
 def plotter(data):
     counts = [0,0,0,0,0]
     tiers = ["<75%","75%-90%","90%-95%", "95%-99%",">99%"]  
     count = 0
     for variable in variables:
         for country in data:
+            # only plot countries with data
             if data[country][count + 2] != "No Data":
                 if float(data[country][count + 2]) > 99:
                     counts[4] += 1
@@ -103,6 +107,7 @@ def plotter(data):
         plt.title(title)
         plt.savefig("./graph" + str(count), bbox_inches='tight')
         plt.show()
+        # just the way the dictionary is set up from load_education function
         count += 3
         counts = [0,0,0,0,0]
 
