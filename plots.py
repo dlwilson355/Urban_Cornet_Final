@@ -11,7 +11,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def create_ECDF(data_dict, x_label="X", y_label="Y", title="ECDF Plot", log_x=False, marks=[]):
+def create_ECDF(data_dict,
+                x_label="X",
+                y_label="Y",
+                title="ECDF Plot",
+                log_x=False,
+                marks=[]):
+
     """
     Plots the empirical cumulative distribution of the values in the data dict.
 
@@ -54,7 +60,13 @@ def create_ECDF(data_dict, x_label="X", y_label="Y", title="ECDF Plot", log_x=Fa
     plt.show()
 
 
-def create_histogram(data_dict, x_label="X", y_label="Count", title="ECDF Plot", log_x=False, bins="auto"):
+def create_histogram(data_dict,
+                     x_label="X",
+                     y_label="Count",
+                     title="Histogram",
+                     log_x=False,
+                     bins="auto"):
+
     """
     Plots a histogram of the values in the data dict.
 
@@ -88,7 +100,15 @@ def create_histogram(data_dict, x_label="X", y_label="Count", title="ECDF Plot",
     plt.show()
 
 
-def create_scatter_plot(x_data_dict, y_data_dict, x_label="X", y_label="Y", title="Scatter Plot", log_x=False, log_y=False, marks=[]):
+def create_scatter_plot(x_data_dict,
+                        y_data_dict,
+                        x_label="X",
+                        y_label="Y",
+                        title="Scatter Plot",
+                        log_x=False,
+                        log_y=False,
+                        marks=[]):
+
     """
     Plots a scatter plot of the values in the data dicts.
 

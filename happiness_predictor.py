@@ -19,7 +19,9 @@ from wealth_data import load_wealth_data, GDP_DATA_FILE_PATH, POVERTY_DATA_FILE_
 from happiness_relationships import read_happiness, read_military, happiness, keys
 from load_education import load_data_education
 from country_name_matching import get_matching_key
-from maps import create_continuous_data_map
+import maps
+import stats
+import plots
 from country_name_matching import TRANSLATE_DICT
 
 
@@ -81,6 +83,13 @@ def load_all_data():
         # add the country data from the other data sets
         data_sets_to_merge = [gdp_data,
                               poverty_data,
+                              military_gdp_percent_data,
+                              military_govt_percent_data,
+                              primary_completion_rates,
+                              literacy_rates]
+
+        # temporarily removing GDP data
+        data_sets_to_merge = [poverty_data,
                               military_gdp_percent_data,
                               military_govt_percent_data,
                               primary_completion_rates,
@@ -165,6 +174,36 @@ def get_SGD_model():
     return pipeline
 
 
+def evaluate_errors(predicted_dict, actual_dict, affect="Ladder"):
+    """Prints out statistics and makes plots about the errors of the algorithm."""
+
+    # compute the errors
+    errors = {country: abs(predicted_dict[country] - actual_dict[country]) for country in predicted_dict.keys()}
+
+    # print some statistics about the errors
+    print(f"Mean error for {affect} was {stats.compute_mean(errors)}.")
+    print(f"Standard deviation of error for {affect} was {stats.compute_stdev(errors)}.")
+    print(f"Median error for {affect} was {stats.compute_median(errors)}.")
+
+    # make some plots of the errors
+    plots.create_histogram(errors,
+                           "Absolute Error",
+                           "Count",
+                           f"Errors When Predicting {affect} Affect")
+
+    plots.create_ECDF(errors,
+                      "Absolute Error",
+                      "Pr < X",
+                      f"Error Probability When Predicting {affect} Affect")
+
+    # make maps of errors
+    maps.create_continuous_data_map(errors,
+                                    f"World Map of Errors Predicting {affect} Affect",
+                                    f"Error Predicting {affect} Affect",
+                                    log_x=False,
+                                    reverse_cmap=False)
+
+
 def train_and_map():
     """
     This function trains a model to predict both positive and negative affect.
@@ -198,17 +237,21 @@ def train_and_map():
             all_actual = dict(all_actual,
                               **{country: actual for country, actual in zip(C_split, Y_test)})
 
-        create_continuous_data_map(all_predictions,
-                                   f"World Map of Predicted {affect} Affect",
-                                   f"Predicted {affect} Affect",
-                                   log_x=False,
-                                   reverse_cmap=True)
+        # construct maps of predicted vs actual
+        maps.create_continuous_data_map(all_predictions,
+                                        f"World Map of Predicted {affect} Affect",
+                                        f"Predicted {affect} Affect",
+                                        log_x=False,
+                                        reverse_cmap=True)
 
-        create_continuous_data_map(all_actual,
-                                   f"World Map of Actual {affect} Affect",
-                                   f"Actual {affect} Affect",
-                                   log_x=False,
-                                   reverse_cmap=True)
+        maps.create_continuous_data_map(all_actual,
+                                        f"World Map of Actual {affect} Affect",
+                                        f"Actual {affect} Affect",
+                                        log_x=False,
+                                        reverse_cmap=True)
+
+        # print statistics and make plots for predicted vs actual
+        evaluate_errors(all_predictions, all_actual, affect=affect)
 
 
 if __name__ == "__main__":

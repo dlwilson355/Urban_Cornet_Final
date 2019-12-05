@@ -48,7 +48,7 @@ def create_discrete_data_map(data_dict, title="World Map", order="auto"):
     color_map = get_cmap("viridis", len(values))
     colors = [color_map(i / (len(values)-1)) for i in range(len(values))]
     for country in countries:
-        match = get_matching_key(country.attributes["NAME_EN"], data, silent=False)
+        match = get_matching_key(country.attributes["NAME_EN"], data, silent=True)
         if match:
             ax.add_geometries(country.geometry,
                               ccrs.PlateCarree(),
