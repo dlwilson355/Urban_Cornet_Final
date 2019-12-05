@@ -36,6 +36,7 @@ def histogram(information, title, bins):
 def cdf(information, title, marks, vals):
     '''make CDF of military measurements, marking countries of interest'''
     x_cdf = sorted(information)
+    #x_cdf = [np.log(x) for x in x_cdf if x!= -1]
     N = len(x_cdf)
     y_cdf = [(N - 1.0 - i) / N for i in range(N)]
     plt.title(title)
