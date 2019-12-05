@@ -111,11 +111,11 @@ def get_train_test_splits(data_dict, affect="Ladder", num_splits=10):
     """Returns a list of splits used for training and testing."""
 
     country_splits = split_countries(data_dict, num_splits)
-    X_train_splits, X_test_splits, Y_train_splits, Y_test_splits = [], [], [], []
+    X_train_splits, X_test_splits, Y_train_splits, Y_test_splits, C_test_splits = [], [], [], [], []
 
     for testing_countries in country_splits:
 
-        X_train, X_test, Y_train, Y_test = [], [], [], []
+        X_train, X_test, Y_train, Y_test, C_test = [], [], [], [], []
 
         for country in data_dict.keys():
 
@@ -132,6 +132,7 @@ def get_train_test_splits(data_dict, affect="Ladder", num_splits=10):
             if country in testing_countries:
                 X_test.append(x)
                 Y_test.append(y)
+                C_test.append(country)
             else:
                 X_train.append(x)
                 Y_train.append(y)
@@ -141,8 +142,9 @@ def get_train_test_splits(data_dict, affect="Ladder", num_splits=10):
         X_test_splits.append(X_test)
         Y_train_splits.append(Y_train)
         Y_test_splits.append(Y_test)
+        C_test_splits.append(C_test)
 
-    return X_train_splits, X_test_splits, Y_train_splits, Y_test_splits, country_splits
+    return X_train_splits, X_test_splits, Y_train_splits, Y_test_splits, C_test_splits
 
 
 def split_countries(data_dict, num_splits=10):
