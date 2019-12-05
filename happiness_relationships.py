@@ -31,8 +31,6 @@ ranks = [
     'Corruption', 'Generosity', 'GDP', 'Life Exp'
 ]
 
-
-# TODO: combine these functions
 def read_happiness(keys):
     '''read in happiness dataset. Return Dictionary of tidy data'''
     i = 0
@@ -252,8 +250,6 @@ def plot_relationships(info_dict, x_key, y_key, ranks):
     #    plt.show()
     plt.savefig('./relationship_' + x_key + y_key, bbox_inches='tight')
 
-
-# TODO: add ranks to reference info
 def find_trends(info_dict, keys, ranks):
     '''break into categories (extremely low, low, below average, above average, high, extremely high)
     and return dictionary of each country with its categorized variables'''
@@ -376,16 +372,9 @@ def predict_happiness(happiness_level, keys, trends):
     return predict
 
 
-# TODO: change to include all variables
 def happy_probabilities(key, predict, title, ranks):
     '''Plot trends of countries with particular levels of happiness'''
-    #    if 'Military' not in key:
-    #        #TODO: this makes corruption look like it is going the wrong way. Reverse it with military
-    #        plt.bar(
-    #            list(range(len(list(predict[key].values())))[1:]),
-    #            list(predict[key].values())[1:])
-    #    else:
-    # TODO: this is not correct
+
     values = [predict[key]['extremely low'], predict[key]['low'],
               predict[key]['below average'], predict[key]['above average'],
               predict[key]['high'], predict[key]['extremely high']]
@@ -428,8 +417,6 @@ def plot_2var(info_dict, keys, happiness):
             else:
                 plot_relationships(info_dict, item, jtem, ranks)
 
-
-# TODO: make this not hard coded...
 def confusion_matrix():
     '''Create Confusion Matrix of correlation coefficients for all variables.
     If the p-value is below 0.05, mark correlation coefficient as 0.'''
@@ -490,10 +477,8 @@ if __name__ == "__main__":
     # plot_2var(info_dict, keys, happiness)
 
     # find trends
-    # TODO: adjust for new data
     trends = find_trends(info_dict, keys, ranks)
 
-    #
     for item in keys:
         predict = predict_happiness('extremely high', keys, trends)
         happy_probabilities(item, predict,
@@ -502,9 +487,6 @@ if __name__ == "__main__":
         happy_probabilities(item, predict,
                             'Levels of ' + item + ' Among Least Happy Countries', ranks)
 
-    print(trends['Finland'])
-    print(info_dict['Finland'])
-    print(predict)
     # plot confusion matrix
     # confusion_matrix()
 
