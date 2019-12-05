@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt
 import scipy.stats
 import numpy as np
 import statistics
-from wealth_data import load_data
+from wealth_data import load_wealth_data
 from load_education import load_data_education
+from country_name_matching import TRANSLATE_DICT
 import seaborn as sn
 import pandas as pd
 ##############################################################################
@@ -19,12 +20,23 @@ import pandas as pd
 ##############################################################################
 '''read in data'''
 
+happiness = ['Ladder', 'Pos Affect', 'Neg Affect']
+keys = [
+    'Social Support', 'Freedom', 'Corruption', 'Generosity', 'GDP', 'GDP 2',
+    'Life Exp', 'Percent Military(of GDP)', 'Primary Completion', 'Literacy',
+    'Percent Military(of Gov)', 'Poverty'
+]
+ranks = [
+        'Pos Affect', 'Neg Affect', 'Ladder', 'Social Support', 'Freedom',
+        'Corruption', 'Generosity', 'GDP', 'Life Exp'
+    ]
+
 #TODO: combine these functions
 def read_happiness(keys):
     '''read in happiness dataset. Return Dictionary of tidy data'''
     i = 0
     info_dict = {}
-    f = open('./WHR.csv')
+    f = open('data/WHR.csv')
     for line in f:
         i = i + 1
         if i > 3:
@@ -45,17 +57,18 @@ def read_happiness(keys):
                 #no data. Make zero. Do not include in statistics and charts (piecewise)
                 for i in range(len(line)):
                     if len(line[i]) < 1:
-                        line[i] = 0
+                        line[i] = np.NAN
+                line = [line[0]] + [int(x) if not np.isnan(float(x)) else np.NAN for x in line[1:]]
                 info_dict[line[0]] = {
-                    'Ladder': int(line[1]),
-                    'Pos Affect': int(line[3]),
-                    'Neg Affect': int(line[4]),
-                    'Social Support': int(line[5]),
-                    'Freedom': int(line[6]),
-                    'Corruption': int(line[7]),
-                    'Generosity': int(line[8]),
-                    'GDP': int(line[9]),
-                    'Life Exp': int(line[10])
+                    'Ladder': line[1],
+                    'Pos Affect': line[3],
+                    'Neg Affect': line[4],
+                    'Social Support': line[5],
+                    'Freedom': line[6],
+                    'Corruption': line[7],
+                    'Generosity': line[8],
+                    'GDP': line[9],
+                    'Life Exp': line[10]
                 }
     info_dict = reconcile(info_dict, keys)
     return info_dict
@@ -68,7 +81,7 @@ def read_education(trans, info, keys):
         "Primary completion rate, total (% of relevant age group)",
         "Literacy rate, adult total (% of people ages 15 and above)"
     ]
-    education_data = load_data_education('./education.csv', variables)
+    education_data = load_data_education('data/education.csv', variables)
 
     for item in education_data.keys():
         if item in trans.keys():
@@ -87,7 +100,7 @@ def read_education(trans, info, keys):
 def read_data(key, filename, trans, info, keys):
     '''read in GDP and Poverty datasets, using given data dictionary. Return
     dictionary of tidy data.'''
-    data = load_data(filename)
+    data = load_wealth_data(filename)
 
     for item in data.keys():
         if item in trans.keys():
@@ -138,7 +151,7 @@ def reconcile(info_dict, keys):
     for item in info_dict.keys():
         for jtem in keys:
             if jtem not in info_dict[item].keys():
-                info_dict[item][jtem] = 0
+                info_dict[item][jtem] = np.NAN
     return info_dict
 
 
@@ -162,7 +175,7 @@ def pairwise_delete(x, y):
     x_copy = x[:]
     y_copy = y[:]
     for i in range(len(x)):
-        if x[i] == 0 or y[i] == 0:
+        if np.isnan(x[i]) or np.isnan(y[i]):
             x_copy.remove(x[i])
             y_copy.remove(y[i])
     return x_copy, y_copy
@@ -228,7 +241,7 @@ def plot_relationships(info_dict, x_key, y_key, ranks):
     #mark countries
     plt.scatter(list(mark_x.values()), list(mark_y.values()))
     for value in mark_x.keys():
-        if mark_x[value] != 0 and mark_y[value] != 0:
+        if not np.isnan(mark_x[value]) and not np.isnan(mark_y[value]):
             props = dict(boxstyle='round', facecolor='white', alpha=0.50)
             ax.annotate(
                 value, (mark_x[value], mark_y[value]), bbox=props)
@@ -237,7 +250,7 @@ def plot_relationships(info_dict, x_key, y_key, ranks):
     plt.title(x_key + ' versus ' + y_key)
     plt.plot(x, line, 'r')
 #    plt.show()
-    plt.savefig('./relationship_' + x_key + y_key,  bbox_inches='tight')
+    plt.savefig('data/relationship_' + x_key + y_key,  bbox_inches='tight')
 
 
 #TODO: add ranks to reference info
@@ -292,7 +305,7 @@ def determine_category(categories, variable, value, ranks):
     average, high, extremely high'''
     if variable in ranks:
         compare = categories[variable]
-        if value == 0:
+        if np.isnan(value):
             return 'no data'
         if value < compare[0]:
             return 'extremely high'
@@ -308,7 +321,7 @@ def determine_category(categories, variable, value, ranks):
             return 'extremely low'
     else:
         compare = categories[variable]
-        if value == 0:
+        if np.isnan(value):
             return 'no data'
         if value < compare[0]:
             return 'extremely low'
@@ -385,7 +398,7 @@ def happy_probabilities(key, predict, title, ranks):
          'high', 'extremely \nhigh'))
     plt.title(title)
     plt.ylabel('Percent')
-    plt.savefig('./' + title ,  bbox_inches='tight')
+    plt.savefig('data/' + title ,  bbox_inches='tight')
     plt.show()
 
 
@@ -447,83 +460,54 @@ def confusion_matrix():
     plt.figure(figsize=(10, 7))
     plt.title('Correlation Coefficients')
     sn.heatmap(data=df_cm, annot=annotate, cmap='PuBu', cbar=True, fmt='')
-    plt.savefig('./confusion', bbox_inches='tight')
+    plt.savefig('data/confusion', bbox_inches='tight')
+
+
+def get_info_dict():
+    '''reads in the data and returns an info dict'''
+    # read in data
+    info_dict = read_happiness(keys + happiness)
+    info_dict = read_military('data/milt_per_gov.csv', info_dict, TRANSLATE_DICT,
+                              '(of Gov)', keys + happiness)
+    info_dict = read_military('data/milt_GDP_per.csv', info_dict, TRANSLATE_DICT,
+                              '(of GDP)', keys + happiness)
+    info_dict = read_data('GDP 2', 'data/gdp_data.csv', TRANSLATE_DICT, info_dict, keys + happiness)
+    info_dict = read_data('Poverty', 'data/poverty_data.csv', TRANSLATE_DICT,
+                          info_dict, keys + happiness)
+    info_dict = read_education(TRANSLATE_DICT, info_dict, keys + happiness)
+
+    return info_dict
+
 
 ##############################################################################
 '''Reference Info'''
-translate_dict = {
-    'Lao PDR': 'Laos',
-    'Venezuela, RB': 'Venezuela',
-    'Iran, Islamic Rep.': 'Iran',
-    'Gambia, The': 'Gambia',
-    'Syrian Arab Republic': 'Syria',
-    'North Macedonia': 'Macedonia',
-    'Bosnia and Herzegovina': 'Bosnia and Herzegovina ',
-    'Russian Federation': 'Russia',
-    'Slovak Republic': 'Slovakia',
-    'Central African Rep.': 'Central African Republic',
-    "Cote d'Ivoire": 'Ivory Coast','Côte d’Ivoire': 'Ivory Coast',
-    'eSwatini': 'Swaziland', 'Eswatini': 'Swaziland',
-    'Congo, Dem. Rep.': 'Congo (Kinshasa)',
-    'Congo, Rep.': 'Congo (Brazzaville)',
-    'Dominican Rep.': 'Dominican Republic',
-    'Korea, Rep.': 'South Korea',
-    'Trinidad & Tobago': 'Trinidad and Tobago',
-    'Kyrgyz Republic': 'Kyrgyzstan',
-    'Hong Kong SAR, China': 'Hong Kong',
-    'Yemen, Rep.': 'Yemen',
-    'USA': 'United States',
-    'United States of America': 'United States',
-    'Viet Nam': 'Vietnam',
-    'UK': 'United Kingdom',
-    'UAE': 'United Arab Emirates',
-    'Egypt, Arab Rep.': 'Egypt'
-}
+if __name__ == "__main__":
+    ##############################################################################
+    '''Work'''
 
-happiness = ['Ladder', 'Pos Affect', 'Neg Affect']
-keys = [
-    'Social Support', 'Freedom', 'Corruption', 'Generosity', 'GDP', 'GDP 2',
-    'Life Exp', 'Percent Military(of GDP)', 'Primary Completion', 'Literacy',
-    'Percent Military(of Gov)', 'Poverty'
-]
-ranks = [
-        'Pos Affect', 'Neg Affect', 'Ladder', 'Social Support', 'Freedom',
-        'Corruption', 'Generosity', 'GDP', 'Life Exp'
-    ]
-##############################################################################
-'''Work'''
-#read in data
-info_dict = read_happiness(keys + happiness)
-info_dict = read_military('./milt_per_gov.csv', info_dict, translate_dict,
-                          '(of Gov)', keys + happiness)
-info_dict = read_military('./milt_GDP_per.csv', info_dict, translate_dict,
-                          '(of GDP)', keys + happiness)
-info_dict = read_data('GDP 2', './gdp_data.csv', translate_dict, info_dict, keys + happiness)
-info_dict = read_data('Poverty', './poverty_data.csv', translate_dict,
-                      info_dict, keys + happiness)
-info_dict = read_education(translate_dict, info_dict, keys + happiness)
+    info_dict = get_info_dict()
 
-#plot 2- Variable Scatterplots
-#plot_2var(info_dict, keys, happiness)
+    #plot 2- Variable Scatterplots
+    #plot_2var(info_dict, keys, happiness)
 
-#find trends
-#TODO: adjust for new data
-trends = find_trends(info_dict, keys, ranks)
+    #find trends
+    #TODO: adjust for new data
+    trends = find_trends(info_dict, keys, ranks)
 
-#
-for item in keys:
-    predict = predict_happiness('extremely high', keys, trends)
-    happy_probabilities(item, predict,
-                        'Levels of ' + item + ' Among Happiest Countries', ranks)
-    predict = predict_happiness('extremely low', keys, trends)
-    happy_probabilities(item, predict,
-                        'Levels of ' + item + ' Among Least Happy Countries', ranks)
+    #
+    for item in keys:
+        predict = predict_happiness('extremely high', keys, trends)
+        happy_probabilities(item, predict,
+                            'Levels of ' + item + ' Among Happiest Countries', ranks)
+        predict = predict_happiness('extremely low', keys, trends)
+        happy_probabilities(item, predict,
+                            'Levels of ' + item + ' Among Least Happy Countries', ranks)
 
-print(trends['Finland'])
-print(info_dict['Finland'])
-print(predict)
-#plot confusion matrix
-#confusion_matrix()
+    print(trends['Finland'])
+    print(info_dict['Finland'])
+    print(predict)
+    #plot confusion matrix
+    #confusion_matrix()
 
 
 ##############################################################################

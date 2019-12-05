@@ -18,7 +18,7 @@ from sklearn.impute import SimpleImputer, IterativeImputer
 from sklearn.preprocessing import normalize, RobustScaler, StandardScaler
 
 from wealth_data import load_wealth_data, GDP_DATA_FILE_PATH, POVERTY_DATA_FILE_PATH
-from WHR_EDA import read_happiness, read_military, TRANSLATE_DICT
+from happiness_relationships import read_happiness, read_military, happiness, keys, ranks, TRANSLATE_DICT, get_info_dict
 from load_education import load_data_education
 from country_name_matching import get_matching_key
 from maps import create_continuous_data_map
@@ -29,6 +29,8 @@ def load_all_data():
     Loads a dictionary where each key is a string representing a country's name.
     Each value in the dictionary is a list of data measurements, where np.NAN is used in place of missing values.
     """
+
+    print(get_info_dict())
 
     # load GDP data
     gdp_data = load_wealth_data(GDP_DATA_FILE_PATH)
