@@ -13,7 +13,7 @@ If you have an older version of anaconda that doesn't have seaborn by default, y
 
 **conda install seaborn**
 
-The source code for this project contains the following files...
+The source code for this project is contained in the following files...
 
 - load_education.py: Contains code for loading the education data and performing plotting with it.
 
